@@ -1,135 +1,323 @@
-// Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 syntax = "proto3";
-
-package google.protobuf;
-
-option csharp_namespace = "Google.Protobuf.WellKnownTypes";
-option cc_enable_arenas = true;
-option go_package = "github.com/golang/protobuf/ptypes/timestamp";
-option java_package = "com.google.protobuf";
-option java_outer_classname = "TimestampProto";
 option java_multiple_files = true;
-option objc_class_prefix = "GPB";
 
-// A Timestamp represents a point in time independent of any time zone
-// or calendar, represented as seconds and fractions of seconds at
-// nanosecond resolution in UTC Epoch time. It is encoded using the
-// Proleptic Gregorian Calendar which extends the Gregorian calendar
-// backwards to year one. It is encoded assuming all minutes are 60
-// seconds long, i.e. leap seconds are "smeared" so that no leap second
-// table is needed for interpretation. Range is from
-// 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z.
-// By restricting to that range, we ensure that we can convert to
-// and from  RFC 3339 date strings.
-// See [https://www.ietf.org/rfc/rfc3339.txt](https://www.ietf.org/rfc/rfc3339.txt).
-//
-// # Examples
-//
-// Example 1: Compute Timestamp from POSIX `time()`.
-//
-//     Timestamp timestamp;
-//     timestamp.set_seconds(time(NULL));
-//     timestamp.set_nanos(0);
-//
-// Example 2: Compute Timestamp from POSIX `gettimeofday()`.
-//
-//     struct timeval tv;
-//     gettimeofday(&tv, NULL);
-//
-//     Timestamp timestamp;
-//     timestamp.set_seconds(tv.tv_sec);
-//     timestamp.set_nanos(tv.tv_usec * 1000);
-//
-// Example 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.
-//
-//     FILETIME ft;
-//     GetSystemTimeAsFileTime(&ft);
-//     UINT64 ticks = (((UINT64)ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
-//
-//     // A Windows tick is 100 nanoseconds. Windows epoch 1601-01-01T00:00:00Z
-//     // is 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z.
-//     Timestamp timestamp;
-//     timestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL));
-//     timestamp.set_nanos((INT32) ((ticks % 10000000) * 100));
-//
-// Example 4: Compute Timestamp from Java `System.currentTimeMillis()`.
-//
-//     long millis = System.currentTimeMillis();
-//
-//     Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)
-//         .setNanos((int) ((millis % 1000) * 1000000)).build();
-//
-//
-// Example 5: Compute Timestamp from current time in Python.
-//
-//     timestamp = Timestamp()
-//     timestamp.GetCurrentTime()
-//
-// # JSON Mapping
-//
-// In JSON format, the Timestamp type is encoded as a string in the
-// [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is, the
-// format is "{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z"
-// where {year} is always expressed using four digits while {month}, {day},
-// {hour}, {min}, and {sec} are zero-padded to two digits each. The fractional
-// seconds, which can go up to 9 digits (i.e. up to 1 nanosecond resolution),
-// are optional. The "Z" suffix indicates the timezone ("UTC"); the timezone
-// is required. A proto3 JSON serializer should always use UTC (as indicated by
-// "Z") when printing the Timestamp type and a proto3 JSON parser should be
-// able to accept both UTC and other timezones (as indicated by an offset).
-//
-// For example, "2017-01-15T01:30:15.01Z" encodes 15.01 seconds past
-// 01:30 UTC on January 15, 2017.
-//
-// In JavaScript, one can convert a Date object to this format using the
-// standard [toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString]
-// method. In Python, a standard `datetime.datetime` object can be converted
-// to this format using [`strftime`](https://docs.python.org/2/library/time.html#time.strftime)
-// with the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one
-// can use the Joda Time's [`ISODateTimeFormat.dateTime()`](
-// http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime--
-// ) to obtain a formatter capable of generating timestamps in this format.
-//
-//
-message Timestamp {
+import "google/protobuf/timestamp.proto";
 
-  // Represents seconds of UTC time since Unix epoch
-  // 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
-  // 9999-12-31T23:59:59Z inclusive.
-  int64 seconds = 1;
+package data;
 
-  // Non-negative fractions of a second at nanosecond resolution. Negative
-  // second values with fractions must still have non-negative nanos values
-  // that count forward in time. Must be from 0 to 999,999,999
-  // inclusive.
-  int32 nanos = 2;
+// 探す画面
+// プロフィールカードリスト
+// プロフィール詳細画面
+// ビジターリスト
+// マッチングリスト (未メッセージ)
+// メッセージ一覧
+// マイページ
+// プロフ編集
+
+message Color {
+
+  message Fill {
+    string hex_color_string = 1;
+  }
+
+  // Gradient direction is not supported yet.
+  message Gradient {
+    string start_hex_color_string = 1;
+    string end_hex_color_string = 2;
+  }
+
+  oneof value {
+    Color.Fill fill = 1;
+    Color.Gradient gradient = 2;
+  }
+}
+
+message ListDisplayOption {
+  // e.g : 2 = XOOXOOXOOXOO...
+  int32 preferred_display_interval = 1;
+  // 表示を繰り返す
+  bool is_repeated = 2;
+  // offsetを指定
+  // e.g offset = 4, interval = 2 : OOOOXOOXOOXOO...
+  int32 display_offset = 3;
+}
+
+message Banner {
+
+  // カウントダウンを表示するバナー
+  message CountdownBanner {
+
+    string id = 1;
+    // 残り秒数
+    int32 remaining_seconds = 2;
+    // 残り時間を埋め込むテンプレート文字列 e.g. "残り {{ remaining_time }}"
+    // TODO: デートフォーマットにしてもいいかも
+    string remaining_seconds_template_text = 3;
+    string text = 4;
+    // バナーをタップしたときに実行するURLScheme
+    string tap_deeplink = 5;
+    Color background_color = 6;
+  }
+
+  // 文字列のみのバナー
+  message TextBanner {
+
+    string id = 1;
+    string text = 2;
+    string tap_deeplink = 3;
+    Color background_color = 4;
+  }
+
+  // 文字列とボタンのバナー
+  message TextButtonBanner {
+
+    string id = 1;
+    string text = 2;
+    string button_text = 3;
+    string tap_deeplink = 4;
+    Color background_color = 5;
+  }
+
+  // 以下の３つのうち、どれかひとつ
+  oneof value {
+    CountdownBanner countdownBanner = 1;
+    TextBanner textBanner = 2;
+    TextButtonBanner textButtonBanner = 3;
+  }
+}
+
+// チュートリアルの最後のページのレイアウト
+message TutorialLastPageBottomLayout {
+  string id = 1;
+  string title = 2;
+  string description = 4;
+  Base64Image icon = 5;
+  string tap_deeplink = 6;
+  Color background_color = 7;
+}
+
+message Base64Image {
+  // url-encodeではなく、standard-encode
+  // uploadのbase64同様に/や+などが入る
+  string binary_string = 1;
+}
+
+// Deprecated
+message GridCard {
+  message ImageCard {
+    string id = 1 [deprecated=true];
+    string tap_deeplink = 2 [deprecated=true];
+    string image_url = 3 [deprecated=true];
+    int32 image_width = 4 [deprecated=true];
+    int32 image_height = 5 [deprecated=true];
+  }
+
+  /*
+  今後、画像とテキストラベルを配置したカードが登場する予定
+  */
+
+  oneof value {
+    ImageCard imageCard = 1 [deprecated=true];
+  }
+}
+
+// Deprecated
+// 検索グリッド画面 カード
+message SearchPartnerGridCardSet {
+  repeated GridCard cards = 1 [deprecated=true];
+  ListDisplayOption display_options = 2 [deprecated=true];
+}
+
+// 検索グリッド画面 カード & バナー
+message SearchPartnerContent {
+
+  CardContent cards = 1;
+  BannerContent banners = 2;
+  HeaderContent header = 3;
+
+  message HeaderContent {
+
+    // 画像ヘッダー
+    message ImageHeader {
+      string id = 1;
+      string image_url = 2;
+      int32 image_width = 3;
+      int32 image_height = 4;
+    }
+
+    oneof value {
+      ImageHeader imageHeader = 1;
+    }
+  }
+
+  message CardContent {
+    repeated Card cards = 1;
+    ListDisplayOption display_options = 2;
+
+    message Card {
+      message ImageGridCard {
+        string id = 1;
+        string tap_deeplink = 2;
+        string image_url = 3;
+        int32 image_width = 4;
+        int32 image_height = 5;
+      }
+
+      /*
+      今後、WebViewCardが登場する予定
+      */
+      oneof value {
+        ImageGridCard imageGridCard = 1;
+      }
+    }
+  }
+
+  message BannerContent {
+    repeated Banner banners = 1;
+    ListDisplayOption display_options = 2;
+
+    message Banner {
+      message ImageCrossBanner {
+        string id = 1;
+        string tap_deeplink = 2;
+        string image_url = 3;
+        int32 image_width = 4;
+        int32 image_height = 5;
+      }
+
+      /*
+      今後、画像とテキストラベルを配置したバナーが登場する予定
+      */
+      oneof value {
+        ImageCrossBanner imageCrossBanner = 1;
+      }
+    }
+  }
+}
+
+// グリッド検索画面　下部バナー
+message SearchPartnerGridBottomBanner {
+  Banner banner = 1;
+}
+
+// 相手のプロフィール画面　下部バナー
+message PartnerProfileBanner {
+  Banner banner = 1;
+}
+
+// ビジター一覧画面　リストに挿入するバナー
+message VisitorListBannerSet {
+
+  message Multiple {
+    repeated Banner banners = 1;
+    ListDisplayOption display_options = 2;
+  }
+  /*
+  Itemの一番最後に挿入する
+  0件の時は表示しない
+  */
+  message Single {
+    Banner banner = 1;
+  }
+
+  oneof value {
+    Multiple multiple = 1;
+    Single single = 2;
+  }
+}
+
+// マッチング一覧画面　リストに挿入するバナー
+message MatchingListBannerSet {
+  repeated Banner banners = 1 [deprecated=true];
+  ListDisplayOption display_options = 2 [deprecated=true];
+}
+
+// メッセージ一覧画面　リストに挿入するバナー
+message MessageListBannerSet {
+  repeated Banner banners = 1 [deprecated=true];
+  ListDisplayOption display_options = 2 [deprecated=true];
+}
+
+// 自分のプロフィール画面(タブの画面) 下部バナー
+message MeProfileBanner {
+  Banner banner = 1;
+}
+
+// 自分のプロフィール編集画面　上部バナー
+message MeProfileEditBanner {
+  Banner banner = 1;
+}
+
+// 検索ソート切り替えの解除アラート
+message SearchPartnerUnlockSortAlert {
+
+  string background_hex_color_string = 1;
+  string title_hex_color_string = 2;
+  string button_text = 3;
+  Color button_background_color = 4;
+}
+
+// 検索グリッド画面 上部固定バナー
+message SearchPartnerGridTopBanner {
+  Banner banner = 1;
+}
+
+message PickupStyle {
+  Color background_color = 1 [deprecated=true];
+}
+
+message StoreReviewRequestFlag {
+  bool shouldRequestWhenTappedSearchTab = 1;
+}
+
+message ReproConfiguration {
+  bool shouldStartRecording = 1;
+}
+
+// コミュニケーション(マッチング)タブに表示するバナーセット
+message CommunicationTabBanner {
+  // メッセージ中のセクションヘッダーの位置
+  Banner banner_for_header_of_messaging_section = 1;
+  // マッチング中のセクションヘッダーの位置
+  Banner banner_for_header_of_matching_section = 2;
+}
+
+message Popup {
+
+  google.protobuf.Timestamp created_at = 1;
+  string content_url = 2;
+}
+
+message PopupSet {
+  repeated Popup popups = 1;
+}
+
+// Root
+message Behavior {
+  SearchPartnerGridCardSet searchPartnerGridCardSet = 1 [deprecated=true];
+  SearchPartnerGridBottomBanner searchPartnerGridBottomBanner = 2;
+  SearchPartnerGridTopBanner searchPartnerGridTopBanner = 3;
+  PartnerProfileBanner partnerProfileBanner = 4;
+  VisitorListBannerSet visitorListBannerSet = 5;
+  MatchingListBannerSet matchingListBannerSet = 6 [deprecated=true];
+  MessageListBannerSet messageListBannerSet = 7 [deprecated=true];
+  MeProfileBanner meProfileBanner = 8;
+  MeProfileEditBanner meProfileEditBanner = 9;
+  SearchPartnerUnlockSortAlert searchPartnerUnlockSortAlert = 10;
+  PickupStyle pickupStyle = 11;
+  StoreReviewRequestFlag storeReviewRequestFlag = 12;
+  SearchPartnerContent searchPartnerRecommendedContentSet = 13;
+  SearchPartnerContent searchPartnerReceivedLikesDescContentSet = 14;
+  SearchPartnerContent searchPartnerLastLoginedAtDescContentSet = 15;
+  SearchPartnerContent searchPartnerRegisteredDescContentSet = 16;
+  SearchPartnerContent searchPartnerFacebookFriendsDescContentSet = 17;
+  SearchPartnerContent searchPartnerDailyPopularContentSet = 18;
+  SearchPartnerContent searchPartnerProfileUpdatedAtDescContentSet = 19;
+  CommunicationTabBanner communication_tab_banner = 20;
+  TutorialLastPageBottomLayout tutorialLastPageBottomLayout = 21;
+  ReproConfiguration reproConfiguration = 22;
+
+  // 5番目のタブ表示時に表示するポップアップ
+  PopupSet popups_for_tab_at_5 = 23;
 }
